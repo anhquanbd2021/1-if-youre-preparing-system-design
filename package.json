@@ -1,0 +1,16 @@
+{
+  "name": "workload-matcher-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Workload Matcher — filter engine classes by workload properties and watch 'best database' fail the audit.",
+  "scripts": {
+    "start": "node app/server.js",
+    "report": "node scripts/match-report.mjs",
+    "test": "node --test \"test/*.test.mjs\"",
+    "check": "npm test && npm run report"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

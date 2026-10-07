@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="Guide to the Workload Matcher — the ten workload properties, the nine engine classes, and what the demo does not claim."><title>Workload Matcher Guide</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@500;700&display=swap"><link rel="stylesheet" href="/styles.css"><!-- pb-shell --><link rel="stylesheet" href="./pb-shell.css"><!-- pb-shell --><!-- pb-back --><link rel="stylesheet" href="./pb-back.css"><!-- pb-back --></head>
+<body><main>
+<nav aria-label="Primary"><a href="/">Lab</a><a aria-current="page" href="/guide.html">Guide</a><a href="https://github.com/anhquanbd2021/1-if-youre-preparing-system-design">Source</a></nav>
+<header><p class="eyebrow">Engine-class guide</p><h1>A filter, not a podium</h1><p class="lede">The matcher treats database selection like a <code>WHERE</code> clause: workload properties in, class verdicts out. A class is <strong>fit</strong> when it covers every requirement natively, a <strong>stretch</strong> when a requirement is met by bolt-on or engineering effort, and a <strong>mismatch</strong> when a requirement is missing outright.</p><p class="warning"><strong>Claims vs. scores.</strong> Every named engine carries the source post's comparison as a claim — the lab never asserts those picks as fact. The capability numbers are illustrative teaching values, not measured benchmark data.</p></header>
+
+<section class="guide-section"><p class="eyebrow">The inputs</p><h2>Ten workload properties</h2><div class="control-grid">
+<article class="panel control"><span class="control-number">Property</span><h3>multi-record ACID writes</h3><p>Money moves, inventory — all-or-nothing across rows. The consistency axis.</p></article>
+<article class="panel control"><span class="control-number">Property</span><h3>sub-ms point lookups</h3><p>One key in, one value out, at huge volume. Sessions, carts, rate limits.</p></article>
+<article class="panel control"><span class="control-number">Property</span><h3>relational joins</h3><p>Normalized tables joined in the serving path — not scan-speed joins.</p></article>
+<article class="panel control"><span class="control-number">Property</span><h3>variable document records</h3><p>Nested, schema-flexible records that differ row to row.</p></article>
+<article class="panel control"><span class="control-number">Property</span><h3>multi-hop traversal</h3><p>Friends-of-friends, path finding — edges are the query.</p></article>
+<article class="panel control"><span class="control-number">Property</span><h3>append-only event ingest</h3><p>Time-ordered writes that never update — metrics, logs, IoT.</p></article>
+<article class="panel control"><span class="control-number">Property</span><h3>analytical scans &amp; aggregates</h3><p>Read millions of rows, aggregate, return one number — the OLAP axis.</p></article>
+<article class="panel control"><span class="control-number">Property</span><h3>vector similarity search</h3><p>Nearest-neighbor over embeddings — semantic search, RAG.</p></article>
+<article class="panel control"><span class="control-number">Property</span><h3>distributed write scale</h3><p>Write throughput beyond one node — many writers, not read replicas.</p></article>
+<article class="panel control"><span class="control-number">Property</span><h3>open-format files</h3><p>One copy on object storage, many engines over it — SQL + ML.</p></article>
+</div></section>
+
+<section class="guide-section"><p class="eyebrow">The capability map</p><h2>Nine classes × ten properties</h2><div class="table-wrap panel"><table><thead><tr><th>Class</th><th>native strengths</th><th>partial (bolt-on / effort)</th><th>missing</th><th>Instances (post claims)</th></tr></thead><tbody>
+<tr><td><strong>Relational OLTP</strong></td><td>transactions, joins</td><td>point lookups, documents (JSONB), traversal (recursive CTE), append, similarity (pgvector), scale-out (replicas)</td><td>analytics, open files</td><td>PostgreSQL, MySQL</td></tr>
+<tr><td><strong>Document store</strong></td><td>documents, scale-out</td><td>transactions, point lookups, joins, append</td><td>traversal, analytics, similarity, open files</td><td>MongoDB</td></tr>
+<tr><td><strong>Key-value store</strong></td><td>point lookups</td><td>append, scale-out</td><td>everything else</td><td>Redis</td></tr>
+<tr><td><strong>Wide-column store</strong></td><td>append, scale-out</td><td>point lookups, documents</td><td>transactions, joins, traversal, analytics, similarity, open files</td><td>Cassandra</td></tr>
+<tr><td><strong>Graph database</strong></td><td>traversal</td><td>transactions, joins, documents, analytics, scale-out</td><td>point lookups, append, similarity, open files</td><td>Neo4j</td></tr>
+<tr><td><strong>Time-series DB</strong></td><td>append</td><td>joins, analytics, scale-out</td><td>transactions, point lookups, documents, traversal, similarity, open files</td><td>TimescaleDB / InfluxDB</td></tr>
+<tr><td><strong>Data warehouse</strong></td><td>analytics</td><td>joins, documents, scale-out, open files</td><td>transactions, point lookups, traversal, append, similarity</td><td>Snowflake, BigQuery / Redshift</td></tr>
+<tr><td><strong>Lakehouse</strong></td><td>analytics, scale-out, open files</td><td>joins, documents, append</td><td>transactions, point lookups, traversal, similarity</td><td>Databricks / Delta Lake</td></tr>
+<tr><td><strong>Vector DB</strong></td><td>similarity, scale-out</td><td>point lookups</td><td>transactions, joins, documents, traversal, append, analytics, open files</td><td>Pinecone, Milvus / Weaviate</td></tr>
+</tbody></table></div><p class="muted">Read the matrix horizontally — these are nine different bets, not nine ranks. "Partial" is where the honest engineering lives: pgvector, JSONB, recursive CTEs, and read replicas are real coverage with real boundaries.</p></section>
+
+<section class="guide-section"><p class="eyebrow">The punchline</p><h2>Watch the traps fire</h2><p>Keep the <em>friend-of-friend recommendations</em> workload and route it to the document class — the audit returns <code>traversal: missing</code>. Then route <em>company-wide BI dashboards</em> to the relational row store: <code>analytics: missing</code>. Same "good databases," two different ways to lose — and nothing a "top databases" list could have warned you about.</p><p>The inverse trap is subtler: route <em>semantic product search</em> to the row store and it comes back <code>stretch</code>, not mismatch — pgvector is a real partial. Whether that stretch is enough is a scale question, which is exactly the post's Pinecone-over-pgvector point.</p><p><a class="try" href="/?task=friend-graph">Open the document-store trap</a> · <a class="try" href="/?task=company-bi">Open the row-store analytics trap</a></p></section>
+
+<section class="guide-section"><p class="eyebrow">Architecture</p><h2>How the demo is built</h2><div class="table-wrap panel"><table><thead><tr><th>Layer</th><th>Behavior</th><th>File</th></tr></thead><tbody>
+<tr><td>Property vocabulary</td><td>The ten yes/no workload properties.</td><td><code>public/properties.mjs</code></td></tr>
+<tr><td>Class map</td><td>Nine engine classes with per-property capability levels and post-claimed instances.</td><td><code>public/classes.mjs</code></td></tr>
+<tr><td>Filter engine</td><td><code>matchTask</code> ranks classes; <code>evaluatePick</code> audits one manual route.</td><td><code>public/matcher.mjs</code></td></tr>
+<tr><td>Server</td><td>Zero-dependency static host plus /health and /version.</td><td><code>app/server.js</code></td></tr>
+</tbody></table></div></section>
+
+<section class="guide-section"><p class="eyebrow">Run locally</p><h2>Inspect the evidence</h2><pre class="code-block">npm test         # matcher + classes + fixtures + server
+npm run report   # every example workload × every class, as a table
+npm run check    # both
+npm start        # serve the lab on :3000</pre></section>
+
+<section class="guide-section panel"><p class="eyebrow">Limits</p><h2>What this demo does not claim</h2><ul>
+<li>Capability levels are illustrative teaching values, not measurements — real engines move between releases.</li>
+<li>Classes blur in practice: NewSQL is distributed OLTP, MongoDB has $graphLookup and Atlas Vector Search, TimescaleDB is Postgres under the hood. The filter is the lesson; the matrix is the example.</li>
+<li>Instance names carry the source post's comparisons — labeled as claims, not verified picks.</li>
+<li>Cost modeling, ops burden, and ecosystem maturity are deliberately out of scope — they are instance-level questions that arrive after the class decision.</li>
+</ul><p><a class="try" href="/">Return to Lab</a></p></section>
+</main><!-- pb-shell --><a class="pb-shell" href="https://github.com/anhquanbd2021/1-if-youre-preparing-system-design" title="1-if-youre-preparing-system-design — an Article Playbook demo (view source)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="9" height="9" rx="2" fill="#2dd4bf"/><rect x="13" y="2" width="9" height="9" rx="2" fill="#2dd4bf" opacity=".45"/><rect x="2" y="13" width="9" height="9" rx="2" fill="#2dd4bf" opacity=".45"/><rect x="13" y="13" width="9" height="9" rx="4.5" fill="#2dd4bf"/></svg><b>1-if-youre-preparing-system-design</b><i>DEMO</i></a><!-- pb-shell --><!-- pb-back --><a class="pb-back" id="pb-back" href="https://github.com/anhquanbd2021/1-if-youre-preparing-system-design" title="Back to the article — 1-if-youre-preparing-system-design">← Article <i>PLAYBOOK</i></a><script>(function(){var a=document.getElementById('pb-back');if(!a)return;var h=location.hostname;if(/^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(h)){a.href='//'+h+':'+(/^(localhost|127\.0\.0\.1)$/.test(h)?'1234':'30082')+'/microsites/article.html?slug=1-if-youre-preparing-system-design';}})();</script><!-- pb-back --></body></html>
